@@ -1,0 +1,79 @@
+:root {
+  --cor-do-evento: #7c3aed;
+  --fundo: #0f0f14;
+  --fundo-do-cartao: #1a1a23;
+  --borda: #2c2c3a;
+  --texto: #f4f4f7;
+  --texto-suave: #a3a3b5;
+  --verde: #22c55e;
+  --vermelho: #ef4444;
+  --raio: 14px;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.45;
+}
+
+a { color: var(--cor-do-evento); }
+
+h1, h2, h3 { line-height: 1.15; margin: 0 0 12px; }
+
+.escondido { display: none !important; }
+
+.cartao {
+  background: var(--fundo-do-cartao);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: 20px;
+}
+
+.botao {
+  appearance: none;
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--cor-do-evento);
+  color: #fff;
+  transition: transform .08s ease, filter .15s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.botao:hover { filter: brightness(1.1); }
+.botao:active { transform: scale(.98); }
+.botao:disabled { opacity: .5; cursor: not-allowed; }
+.botao-secundario { background: transparent; border: 1px solid var(--borda); color: var(--texto); }
+.botao-perigo { background: transparent; border: 1px solid var(--vermelho); color: var(--vermelho); }
+.botao-largo { width: 100%; }
+
+label { display: block; font-size: 14px; color: var(--texto-suave); margin: 14px 0 6px; }
+
+input[type="text"], input[type="email"], input[type="password"], input[type="tel"], textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--borda);
+  background: #111118;
+  color: var(--texto);
+  font: inherit;
+  font-size: 16px;
+}
+input:focus, textarea:focus { outline: 2px solid var(--cor-do-evento); outline-offset: 1px; }
+
+.aviso { padding: 10px 14px; border-radius: 10px; font-size: 14px; margin-top: 12px; }
+.aviso-erro { background: rgba(239, 68, 68, .12); color: #fca5a5; border: 1px solid rgba(239, 68, 68, .4); }
+.aviso-sucesso { background: rgba(34, 197, 94, .12); color: #86efac; border: 1px solid rgba(34, 197, 94, .4); }
+
+.texto-suave { color: var(--texto-suave); }

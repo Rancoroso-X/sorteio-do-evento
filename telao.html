@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Telão do Sorteio</title>
+  <link rel="stylesheet" href="estilos-compartilhados.css">
+  <style>
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      background:
+        radial-gradient(1200px 700px at 15% 10%, color-mix(in srgb, var(--cor-do-evento) 35%, transparent), transparent 60%),
+        radial-gradient(900px 600px at 90% 100%, color-mix(in srgb, var(--cor-do-evento) 20%, transparent), transparent 60%),
+        #0b0b10;
+    }
+    .telao { height: 100vh; display: grid; grid-template-rows: auto 1fr auto; padding: 3vh 4vw; gap: 2vh; }
+    .topo { display: flex; align-items: center; gap: 2vw; }
+    .topo img { max-height: 10vh; max-width: 22vw; object-fit: contain; }
+    .topo h1 { font-size: 5vh; margin: 0; }
+    .topo .premio { font-size: 3vh; color: var(--texto-suave); }
+    .meio { display: grid; grid-template-columns: auto 1fr; gap: 5vw; align-items: center; min-height: 0; }
+    .bloco-do-qr { text-align: center; }
+    .bloco-do-qr .moldura { background: #fff; padding: 2vh; border-radius: 2vh; display: inline-block; box-shadow: 0 2vh 6vh rgba(0,0,0,.5); }
+    .bloco-do-qr img { width: 46vh; height: 46vh; display: block; image-rendering: pixelated; }
+    .bloco-do-qr .chamada { font-size: 3.4vh; font-weight: 700; margin-top: 2.5vh; }
+    .bloco-do-qr .detalhe { font-size: 2.2vh; color: var(--texto-suave); }
+    .bloco-do-contador .numero { font-size: 22vh; font-weight: 900; line-height: 1; color: #fff; text-shadow: 0 0 6vh color-mix(in srgb, var(--cor-do-evento) 70%, transparent); }
+    .bloco-do-contador .legenda { font-size: 4vh; color: var(--texto-suave); margin-bottom: 4vh; }
+    .ultimos { display: flex; flex-wrap: wrap; gap: 1.2vh; max-height: 28vh; overflow: hidden; }
+    .ultimos span {
+      font-size: 2.6vh; padding: 1vh 2vh; border-radius: 999px;
+      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+      animation: entrar .5s ease;
+    }
+    @keyframes entrar { from { transform: translateY(1.5vh) scale(.9); opacity: 0; } }
+    .rodape { display: flex; justify-content: space-between; align-items: center; gap: 2vw; }
+    .rodape .botao { font-size: 3vh; padding: 2vh 5vh; border-radius: 2vh; }
+    .rodape label { display: flex; align-items: center; gap: 1vh; margin: 0; font-size: 2vh; }
+    .rodape .controles { display: flex; align-items: center; gap: 2vw; }
+
+    .sobreposicao {
+      position: fixed; inset: 0; background: rgba(5,5,8,.92); backdrop-filter: blur(6px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3vh; z-index: 10;
+    }
+    .area-da-roleta { position: relative; width: 78vh; height: 78vh; }
+    .area-da-roleta canvas { width: 100%; height: 100%; }
+    .ponteiro {
+      position: absolute; top: -2.5vh; left: 50%; transform: translateX(-50%);
+      width: 0; height: 0; border-left: 3vh solid transparent; border-right: 3vh solid transparent;
+      border-top: 6vh solid #fff; filter: drop-shadow(0 1vh 1vh rgba(0,0,0,.6)); z-index: 2;
+    }
+    .ganhador { text-align: center; animation: aparecer .6s cubic-bezier(.2,1.4,.4,1); }
+    @keyframes aparecer { from { transform: scale(.4); opacity: 0; } }
+    .ganhador .etiqueta { font-size: 4vh; color: var(--texto-suave); letter-spacing: .2em; text-transform: uppercase; }
+    .ganhador .nome { font-size: 11vh; font-weight: 900; line-height: 1.05; margin: 2vh 4vw; text-shadow: 0 0 6vh var(--cor-do-evento); }
+    .ganhador .whatsapp { font-size: 3.4vh; color: var(--texto-suave); }
+    .ganhador .botoes { display: flex; gap: 2vh; justify-content: center; margin-top: 5vh; }
+    .ganhador .botao { font-size: 2.6vh; padding: 1.6vh 4vh; }
+    #confete { position: fixed; inset: 0; pointer-events: none; z-index: 11; }
+    .mensagem-central { height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 16px; }
+    .botao-tela-cheia { position: fixed; top: 12px; right: 12px; opacity: .25; z-index: 5; }
+    .botao-tela-cheia:hover { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="mensagem-central" id="tela-mensagem">
+    <div>
+      <h1 id="titulo-da-mensagem">Carregando...</h1>
+      <p class="texto-suave" id="texto-da-mensagem"></p>
+    </div>
+  </div>
+
+  <div class="telao escondido" id="tela-principal">
+    <header class="topo">
+      <img id="logo-do-evento" alt="" class="escondido">
+      <div>
+        <h1 id="nome-do-evento"></h1>
+        <div class="premio" id="premio-do-evento"></div>
+      </div>
+    </header>
+
+    <section class="meio">
+      <div class="bloco-do-qr">
+        <div class="moldura" id="qr-do-telao"></div>
+        <div class="chamada">Aponte a câmera e participe!</div>
+        <div class="detalhe">Acerte a pergunta e entre no sorteio</div>
+      </div>
+      <div class="bloco-do-contador">
+        <div class="numero" id="contador">0</div>
+        <div class="legenda" id="legenda-do-contador">participantes</div>
+        <div class="ultimos" id="ultimos-participantes"></div>
+      </div>
+    </section>
+
+    <footer class="rodape">
+      <span class="texto-suave" id="aviso-inscricoes" style="font-size:2vh"></span>
+      <div class="controles">
+        <label><input type="checkbox" id="campo-nao-repetir" checked> Não repetir quem já ganhou</label>
+        <button class="botao" id="botao-sortear">🎰 Sortear</button>
+      </div>
+    </footer>
+  </div>
+
+  <div class="sobreposicao escondido" id="sobreposicao-do-sorteio">
+    <div class="area-da-roleta" id="area-da-roleta">
+      <div class="ponteiro"></div>
+      <canvas id="roleta" width="1200" height="1200"></canvas>
+    </div>
+    <div class="ganhador escondido" id="ganhador">
+      <div class="etiqueta">🎉 Ganhador(a) 🎉</div>
+      <div class="nome" id="nome-do-ganhador"></div>
+      <div class="whatsapp" id="whatsapp-do-ganhador"></div>
+      <div class="botoes">
+        <button class="botao botao-secundario" id="botao-fechar-sorteio">Voltar ao telão</button>
+        <button class="botao" id="botao-sortear-de-novo">Sortear outro</button>
+      </div>
+    </div>
+  </div>
+  <canvas id="confete"></canvas>
+  <button class="botao botao-secundario botao-tela-cheia" id="botao-tela-cheia" title="Tela cheia">⛶</button>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="conexao-com-banco-de-dados.js"></script>
+  <script src="tela-do-telao.js"></script>
+</body>
+</html>

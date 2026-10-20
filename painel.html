@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel de Sorteios</title>
+  <link rel="stylesheet" href="estilos-compartilhados.css">
+  <style>
+    .pagina { max-width: 960px; margin: 0 auto; padding: 24px 16px 64px; }
+    .barra-do-topo { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+    .barra-do-topo h1 { margin: 0; font-size: 22px; }
+    .caixa-de-login { max-width: 400px; margin: 10vh auto 0; }
+    .grade-de-eventos { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+    .cartao-de-evento { cursor: pointer; border-left: 4px solid var(--cor-do-cartao, var(--cor-do-evento)); }
+    .cartao-de-evento:hover { border-color: var(--texto-suave); }
+    .cartao-de-evento h3 { margin-bottom: 6px; }
+    .secoes { display: grid; gap: 16px; }
+    .linha { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .duas-colunas { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 640px) { .duas-colunas { grid-template-columns: 1fr; } }
+    .selo { font-size: 12px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--borda); color: var(--texto-suave); }
+    .selo-aberto { color: #86efac; border-color: rgba(34,197,94,.5); }
+    .item-de-pergunta { border: 1px solid var(--borda); border-radius: 10px; padding: 12px 14px; display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; }
+    .item-de-pergunta ol { margin: 6px 0 0; padding-left: 20px; color: var(--texto-suave); font-size: 14px; }
+    .item-de-pergunta li.certa { color: #86efac; font-weight: 600; }
+    .lista-de-perguntas { display: grid; gap: 10px; margin-bottom: 16px; }
+    .alternativa-editavel { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+    .alternativa-editavel input[type="radio"] { width: 20px; height: 20px; flex: none; accent-color: var(--verde); }
+    .area-do-qr { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+    .area-do-qr canvas, .area-do-qr img { background: #fff; padding: 10px; border-radius: 10px; width: 180px; height: 180px; }
+    .link-do-participante { word-break: break-all; font-family: ui-monospace, monospace; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--borda); }
+    th { color: var(--texto-suave); font-weight: 500; }
+    .rolagem-da-tabela { max-height: 420px; overflow: auto; }
+    .logo-atual { max-height: 56px; max-width: 160px; object-fit: contain; background: #fff1; border-radius: 8px; padding: 4px; }
+    .numero-grande { font-size: 40px; font-weight: 800; }
+    input[type="color"] { width: 56px; height: 44px; border: 1px solid var(--borda); border-radius: 10px; background: #111118; padding: 4px; }
+  </style>
+</head>
+<body>
+  <main class="pagina">
+
+    <!-- Entrar -->
+    <section id="tela-entrar" class="escondido">
+      <div class="cartao caixa-de-login">
+        <h1>Painel de Sorteios</h1>
+        <p class="texto-suave">Entre com seu e-mail e senha. Primeira vez? Preencha e clique em "Criar minha conta".</p>
+        <form id="formulario-de-entrada">
+          <label for="campo-email">E-mail</label>
+          <input type="email" id="campo-email" autocomplete="email" required>
+          <label for="campo-senha">Senha (mínimo 6 caracteres)</label>
+          <input type="password" id="campo-senha" autocomplete="current-password" minlength="6" required>
+          <div class="linha" style="margin-top:18px">
+            <button class="botao" type="submit">Entrar</button>
+            <button class="botao botao-secundario" type="button" id="botao-criar-conta">Criar minha conta</button>
+          </div>
+          <div class="aviso escondido" id="aviso-de-entrada"></div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Lista de eventos -->
+    <section id="tela-lista-de-eventos" class="escondido">
+      <div class="barra-do-topo">
+        <h1>Meus eventos</h1>
+        <div class="linha">
+          <span class="texto-suave" id="email-de-quem-entrou"></span>
+          <button class="botao botao-secundario" id="botao-sair">Sair</button>
+          <button class="botao" id="botao-novo-evento">+ Novo evento</button>
+        </div>
+      </div>
+      <div class="grade-de-eventos" id="grade-de-eventos"></div>
+      <p class="texto-suave escondido" id="aviso-sem-eventos">Você ainda não tem eventos. Clique em "+ Novo evento" para começar.</p>
+    </section>
+
+    <!-- Um evento -->
+    <section id="tela-do-evento" class="escondido">
+      <div class="barra-do-topo">
+        <button class="botao botao-secundario" id="botao-voltar">← Meus eventos</button>
+        <a class="botao" id="botao-abrir-telao" target="_blank" rel="noopener">📺 Abrir telão</a>
+      </div>
+
+      <div class="secoes">
+        <div class="cartao">
+          <h2>1. Dados do evento</h2>
+          <form id="formulario-do-evento">
+            <div class="duas-colunas">
+              <div>
+                <label for="campo-nome-do-evento">Nome do evento</label>
+                <input type="text" id="campo-nome-do-evento" required>
+              </div>
+              <div>
+                <label for="campo-premio">Prêmio</label>
+                <input type="text" id="campo-premio" placeholder="Ex: Camiseta oficial da banda">
+              </div>
+            </div>
+            <div class="duas-colunas">
+              <div>
+                <label for="campo-cor">Cor principal</label>
+                <input type="color" id="campo-cor">
+              </div>
+              <div>
+                <label for="campo-logo">Logo (PNG ou JPG, até 2 MB)</label>
+                <div class="linha">
+                  <img class="logo-atual escondido" id="logo-atual" alt="Logo atual">
+                  <input type="file" id="campo-logo" accept="image/png,image/jpeg,image/webp,image/svg+xml">
+                </div>
+              </div>
+            </div>
+            <label class="linha" style="color:var(--texto);margin-top:18px">
+              <input type="checkbox" id="campo-aberto" style="width:20px;height:20px">
+              Inscrições abertas (desmarque para ninguém mais conseguir entrar)
+            </label>
+            <div class="linha" style="margin-top:18px">
+              <button class="botao" type="submit" id="botao-salvar-evento">Salvar</button>
+              <button class="botao botao-perigo" type="button" id="botao-apagar-evento">Apagar evento</button>
+            </div>
+            <div class="aviso escondido" id="aviso-do-evento"></div>
+          </form>
+        </div>
+
+        <div class="cartao">
+          <h2>2. Perguntas</h2>
+          <p class="texto-suave">Cada pessoa recebe uma pergunta sorteada desta lista. Se errar, recebe outra.</p>
+          <div class="lista-de-perguntas" id="lista-de-perguntas"></div>
+          <form id="formulario-de-pergunta" class="cartao" style="background:#111118">
+            <h3>Nova pergunta</h3>
+            <label for="campo-enunciado">Pergunta</label>
+            <input type="text" id="campo-enunciado" placeholder="Ex: Em que ano a banda foi criada?" required>
+            <label>Alternativas (marque a bolinha da resposta certa)</label>
+            <div id="alternativas-editaveis"></div>
+            <div class="linha" style="margin-top:10px">
+              <button class="botao" type="submit">Adicionar pergunta</button>
+            </div>
+            <div class="aviso escondido" id="aviso-da-pergunta"></div>
+          </form>
+        </div>
+
+        <div class="cartao">
+          <h2>3. QR code e link</h2>
+          <div class="area-do-qr">
+            <div id="qr-do-painel"></div>
+            <div style="flex:1;min-width:220px">
+              <p class="texto-suave" style="margin-top:0">Esse é o link que o público abre. O telão já mostra esse QR grande.</p>
+              <p class="link-do-participante" id="link-do-participante"></p>
+              <div class="linha">
+                <button class="botao botao-secundario" id="botao-copiar-link">Copiar link</button>
+                <a class="botao botao-secundario" id="botao-testar-como-participante" target="_blank" rel="noopener">Testar como participante</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cartao">
+          <div class="linha" style="justify-content:space-between">
+            <h2 style="margin:0">4. Participantes</h2>
+            <div class="linha">
+              <button class="botao botao-secundario" id="botao-atualizar-participantes">Atualizar</button>
+              <button class="botao" id="botao-baixar-planilha">⬇ Baixar planilha</button>
+            </div>
+          </div>
+          <div class="numero-grande" id="total-de-participantes">0</div>
+          <div class="rolagem-da-tabela">
+            <table>
+              <thead><tr><th>Nome completo</th><th>WhatsApp</th><th>Entrou às</th><th></th></tr></thead>
+              <tbody id="tabela-de-participantes"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="cartao">
+          <h2>5. Ganhadores</h2>
+          <table>
+            <thead><tr><th>Nome completo</th><th>WhatsApp</th><th>Sorteado às</th></tr></thead>
+            <tbody id="tabela-de-ganhadores"></tbody>
+          </table>
+          <p class="texto-suave escondido" id="aviso-sem-ganhadores">Nenhum sorteio feito ainda.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="conexao-com-banco-de-dados.js"></script>
+  <script src="tela-do-painel.js"></script>
+</body>
+</html>

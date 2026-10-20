@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Participe do sorteio</title>
+  <link rel="stylesheet" href="estilos-compartilhados.css">
+  <style>
+    body { min-height: 100vh; }
+    .pagina { max-width: 480px; margin: 0 auto; padding: 24px 16px 48px; }
+    .cabecalho { text-align: center; margin-bottom: 20px; }
+    .cabecalho img { max-height: 72px; max-width: 70%; object-fit: contain; margin-bottom: 12px; }
+    .cabecalho h1 { font-size: 24px; }
+    .premio {
+      display: inline-block; margin-top: 4px; padding: 6px 12px; border-radius: 999px;
+      background: color-mix(in srgb, var(--cor-do-evento) 22%, transparent); color: #fff; font-size: 14px;
+    }
+    .etiqueta { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--texto-suave); }
+    .enunciado { font-size: 20px; font-weight: 700; margin: 8px 0 18px; }
+    .alternativas { display: grid; gap: 10px; }
+    .alternativa {
+      text-align: left; padding: 16px; border-radius: 12px; border: 1px solid var(--borda);
+      background: #111118; color: var(--texto); font: inherit; font-size: 16px; cursor: pointer;
+    }
+    .alternativa:hover { border-color: var(--cor-do-evento); }
+    .alternativa.certa { border-color: var(--verde); background: rgba(34,197,94,.15); }
+    .alternativa.errada { border-color: var(--vermelho); background: rgba(239,68,68,.15); animation: tremer .35s; }
+    @keyframes tremer { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+    .resultado { text-align: center; padding: 28px 20px; }
+    .resultado .icone { font-size: 56px; }
+    .consentimento { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--texto-suave); margin: 16px 0; }
+    .consentimento input { margin-top: 3px; width: 18px; height: 18px; flex: none; }
+  </style>
+</head>
+<body>
+  <main class="pagina">
+    <header class="cabecalho escondido" id="cabecalho">
+      <img id="logo-do-evento" alt="" class="escondido">
+      <h1 id="nome-do-evento"></h1>
+      <div class="premio escondido" id="premio-do-evento"></div>
+    </header>
+
+    <section class="cartao resultado" id="tela-carregando">
+      <p class="texto-suave">Carregando...</p>
+    </section>
+
+    <section class="cartao resultado escondido" id="tela-mensagem">
+      <div class="icone" id="icone-da-mensagem"></div>
+      <h2 id="titulo-da-mensagem"></h2>
+      <p class="texto-suave" id="texto-da-mensagem"></p>
+    </section>
+
+    <section class="cartao escondido" id="tela-pergunta">
+      <div class="etiqueta">Acerte para entrar no sorteio</div>
+      <div class="enunciado" id="enunciado"></div>
+      <div class="alternativas" id="alternativas"></div>
+      <div class="aviso aviso-erro escondido" id="aviso-resposta-errada">
+        Não foi dessa vez! Tente outra pergunta.
+      </div>
+      <button class="botao botao-largo escondido" id="botao-outra-pergunta" style="margin-top:14px">Outra pergunta</button>
+    </section>
+
+    <section class="cartao escondido" id="tela-cadastro">
+      <div class="aviso aviso-sucesso" style="margin:0 0 8px">Resposta certa! Agora é só se inscrever.</div>
+      <form id="formulario-de-cadastro" novalidate>
+        <label for="campo-nome">Nome completo</label>
+        <input type="text" id="campo-nome" autocomplete="name" placeholder="Ex: Maria Souza" required>
+        <label for="campo-whatsapp">WhatsApp</label>
+        <input type="tel" id="campo-whatsapp" autocomplete="tel" inputmode="numeric" placeholder="(11) 98765-4321" required>
+        <label class="consentimento">
+          <input type="checkbox" id="campo-consentimento" required>
+          <span>Aceito participar do sorteio e ser contatado(a) pelo WhatsApp caso eu ganhe.</span>
+        </label>
+        <button class="botao botao-largo" type="submit" id="botao-inscrever">Quero participar</button>
+        <div class="aviso aviso-erro escondido" id="aviso-do-cadastro"></div>
+      </form>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="conexao-com-banco-de-dados.js"></script>
+  <script src="tela-do-participante.js"></script>
+</body>
+</html>
